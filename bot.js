@@ -87,7 +87,7 @@ class MyBot {
         }
         await turnContext.sendActivity({ attachments: [card] });
 
-        var reply = MessageFactory.suggestedActions(['Verdade', 'FakeNews'], 'O que acha dessa noticia?');
+        var reply = MessageFactory.suggestedActions(['Verdade', 'FakeNews']);
         await turnContext.sendActivity(reply);
     }
 }
