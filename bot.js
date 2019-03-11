@@ -3,7 +3,7 @@
 //
 var fs = require('fs');
 
-const { ActivityTypes } = require('botbuilder');
+const { ActivityTypes, MessageFactory } = require('botbuilder');
 
 class MyBot {
     constructor(userState) {
@@ -11,13 +11,26 @@ class MyBot {
         this.fakeJSON = JSON.parse(fs.readFileSync('sensacionalista.json', 'utf8'))
     }
 
+    generateRandomInteger(min, max) {
+        return Math.floor(min + Math.random()*(max + 1 - min))
+    }
+
     async onTurn(turnContext) {
         // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
         if (turnContext.activity.type === ActivityTypes.Message) {
-            await turnContext.sendActivity(`${ this.realJSON[0].title }`);
+            //await turnContext.sendActivity(`${ this.realJSON[0].title }`);
+            const text = turnContext.activity.text;
 
-            if (turnContext.activity.text === "inicio") {
+            // If the `text` is in the Array, a valid color was selected and send agreement.
+            if (text === this.currentNews) {
+                await turnContext.sendActivity(`Acertou mizeravi!`);
             }
+            else {
+                await turnContext.sendActivity('Erroooooou!');
+            }
+
+            // After the bot has responded send the suggested actions.
+            await this.sendSuggestedActions(turnContext);
         }
         else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             const activity = turnContext.activity;
@@ -36,6 +49,24 @@ class MyBot {
         else {
             await turnContext.sendActivity(`[${ turnContext.activity.type } event detected]`);
         }
+    }
+
+    async sendSuggestedActions(turnContext) {
+        var realOrFake = this.generateRandomInteger(0, 1);
+
+        if (realOrFake === 0) {
+            let index = this.generateRandomInteger(0, this.fakeJSON.length-1);
+            this.currentNews = "FakeNews";
+            await turnContext.sendActivity(this.fakeJSON[index].title);
+        }
+        else {
+            let index = this.generateRandomInteger(0, this.realJSON.length-1);
+            this.currentNews = "Verdade";
+            await turnContext.sendActivity(this.realJSON[index].title);
+        }
+
+        var reply = MessageFactory.suggestedActions(['Verdade', 'FakeNews'], 'O que acha dessa noticia?');
+        await turnContext.sendActivity(reply);
     }
 }
 
