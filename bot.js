@@ -9,6 +9,8 @@ class MyBot {
     constructor(userState) {
         this.realJSON = JSON.parse(fs.readFileSync('surrealista.json', 'utf8'))
         this.fakeJSON = JSON.parse(fs.readFileSync('sensacionalista.json', 'utf8'))
+        this.score = 0;
+        this.turn = 0;
     }
 
     generateRandomInteger(min, max) {
@@ -24,10 +26,12 @@ class MyBot {
             // If the `text` is in the Array, a valid color was selected and send agreement.
             if (text === this.currentNews) {
                 await turnContext.sendActivity(`Acertou mizeravi!`);
+                this.score += 1;
             }
             else {
                 await turnContext.sendActivity('Erroooooou!');
             }
+            this.turn += 1;
 
             // After the bot has responded send the suggested actions.
             await this.sendSuggestedActions(turnContext);
@@ -54,6 +58,7 @@ class MyBot {
     async sendSuggestedActions(turnContext) {
         var realOrFake = this.generateRandomInteger(0, 1);
 
+        await turnContext.sendActivity(`Acertos: ${this.score} Turnos: ${this.turn}`);
         if (realOrFake === 0) {
             let index = this.generateRandomInteger(0, this.fakeJSON.length-1);
             this.currentNews = "FakeNews";
