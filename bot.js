@@ -3,7 +3,7 @@
 //
 var fs = require('fs');
 
-const { ActivityTypes, MessageFactory } = require('botbuilder');
+const { ActivityTypes, MessageFactory, CardFactory } = require('botbuilder');
 
 class MyBot {
     constructor(userState) {
@@ -58,17 +58,34 @@ class MyBot {
     async sendSuggestedActions(turnContext) {
         var realOrFake = this.generateRandomInteger(0, 1);
 
+        let card = null;
+
         await turnContext.sendActivity(`Acertos: ${this.score} Turnos: ${this.turn}`);
         if (realOrFake === 0) {
             let index = this.generateRandomInteger(0, this.fakeJSON.length-1);
             this.currentNews = "FakeNews";
-            await turnContext.sendActivity(this.fakeJSON[index].title);
+            card = CardFactory.heroCard(
+                '',
+                CardFactory.images([this.fakeJSON[index].img]),
+                CardFactory.actions([]),
+                {
+                    text: `${this.fakeJSON[index].title}`
+                }
+            );
         }
         else {
             let index = this.generateRandomInteger(0, this.realJSON.length-1);
             this.currentNews = "Verdade";
-            await turnContext.sendActivity(this.realJSON[index].title);
+            card = CardFactory.heroCard(
+                '',
+                CardFactory.images([this.realJSON[index].img]),
+                CardFactory.actions([]),
+                {
+                    text: `${this.realJSON[index].title}`
+                }
+            );
         }
+        await turnContext.sendActivity({ attachments: [card] });
 
         var reply = MessageFactory.suggestedActions(['Verdade', 'FakeNews'], 'O que acha dessa noticia?');
         await turnContext.sendActivity(reply);
